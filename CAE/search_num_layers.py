@@ -24,7 +24,7 @@ VAL_DIR  = "data/my_data/Val"
 TEST_DIR = "data/my_data/Test"
 LOG_PATH_VAL  = "outputs/log_num/stat_val.csv"
 LOG_PATH_SEP  = "outputs/log_num/stat_sep.csv"
-LOG_PATH_SPEC = "outputs/log_num/stat_spec.csv"   # специфичность по нормальным видео
+LOG_PATH_SPEC = "outputs/log_num/stat_spec.csv"   
 
 labels_map = {
     "output_video_pnp_0_1.avi": "labels_pnp_0_1.csv",
@@ -33,7 +33,7 @@ labels_map = {
     "output_video_pnp_0_4.avi": "labels_pnp_0_4.csv",
 }
 
-# нормальные видео из Test — используются для расчёта специфичности
+
 labels_norm_map = {
     "output_video_pnp_0.avi":  "labels_pnp_0.csv",
     "output_video_pnp_12.avi": "labels_pnp_12.csv",
@@ -331,7 +331,7 @@ def evaluate_specificity(params, model, device):
         "fp_global":            fp_all,
     }
 
-    # --- специфичность по каждому видео ---
+ 
     video_rows = []
     for video_file, losses_arr in per_video.items():
         preds = (losses_arr >= threshold).astype(int)
@@ -375,21 +375,18 @@ if __name__ == "__main__":
 
     for params in experiments:
         try:
-            # ── 1. обучение ──────────────────────────────────────────────
+
             model, model_path, train_log = train(params, device)
             log_to_csv(train_log, LOG_PATH_TRAIN)
 
-            # ── 2. лог val-статистики ────────────────────────────────────
             val_row = evaluate_val(params, model, device)
             if val_row:
                 log_to_csv(val_row, LOG_PATH_VAL)
 
-            # ── 3. разделимость по аномальным видео ──────────────────────
             sep_rows = evaluate_separability(params, model, device)
             for row in sep_rows:
                 log_to_csv(row, LOG_PATH_SEP)
 
-            # ── 4. специфичность (общая + по каждому нормальному видео) ──
             spec_exp_row, spec_video_rows = evaluate_specificity(params, model, device)
             if spec_exp_row:
                 log_to_csv(spec_exp_row, LOG_PATH_SPEC)
